@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'networking.dart';
 import 'location_service.dart';
 
@@ -8,9 +7,9 @@ const hourlyWeatherURL = 'https://0.0.0.0:3000/api/weather/hourlyCondition';
 
 class WeatherModel {
   Future<dynamic> getLocationWeather() async {
-    LocationService location = LocationService();
-    await location.getCurrentLocation();
-    Map body = {"lat": location.latitude, "lon": location.longitude};
+    var userLocation = await LocationService().getCurrentLocation();
+
+    Map body = {"lat": userLocation.latitude, "lon": userLocation.longitude};
     NetWorkHelper netWorkHelper = NetWorkHelper(locationWeatherURL, body);
     var currentWeatherData;
     try {
@@ -22,10 +21,8 @@ class WeatherModel {
   }
 
   Future<dynamic> getHourlyWeather() async {
-    print("HOURLY CALLED");
-    LocationService location = LocationService();
-    await location.getCurrentLocation();
-    Map body = {"lat": location.latitude, "lon": location.longitude};
+    var userLocation = await LocationService().getCurrentLocation();
+    Map body = {"lat": userLocation.latitude, "lon": userLocation.longitude};
     NetWorkHelper netWorkHelper = NetWorkHelper(hourlyWeatherURL, body);
     var hourlyWeatherData;
     try {

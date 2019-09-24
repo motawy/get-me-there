@@ -1,12 +1,9 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:get_me_there/models/user_location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../utilities/constants.dart';
-import '../services/weather.dart';
+import 'package:location/location.dart';
+import 'package:get_me_there/services/weather.dart';
 import 'package:get_me_there/weather_carousel.dart';
-import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:google_maps_webservice/places.dart';
 import 'package:get_me_there/utilities/constants.dart';
 import 'package:get_me_there/services/location_service.dart';
 
@@ -27,20 +24,23 @@ class _HomePageState extends State<HomePage> {
   double currentLat;
   double currentLon;
   WeatherModel weatherModel = WeatherModel();
+  bool _showValidationError = false;
 
   GoogleMapController googleMapController;
+  GoogleMap mapRef;
+
   String searchAddress;
 
   TextEditingController locationController = TextEditingController();
   TextEditingController destinationController = TextEditingController();
-  static LatLng _initialPosition;
+  static UserLocation _currentLocation;
   LatLng _lastPosition;
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
 
   @override
   void initState() {
-    getUserLocation();
+    _setInitialPosition();
     updateUI(widget.locationWeather);
     super.initState();
   }
@@ -101,21 +101,23 @@ class _HomePageState extends State<HomePage> {
             ),
             Flexible(
               flex: 3,
-              child: _initialPosition == null
-                  ? Container(
-                      alignment: Alignment.center,
-                      child: CircularProgressIndicator(),
-                    )
-                  : Stack(
-                      children: <Widget>[
-                        GoogleMap(
-                          mapType: MapType.normal,
-                          initialCameraPosition: CameraPosition(
-                              target: _initialPosition, zoom: 15.0),
-                          onMapCreated: onMapCreated,
-                        ),
-                      ],
-                    ),
+              child: Center(
+                child: _currentLocation == null
+                    ? Container(
+                        alignment: Alignment.center,
+                        child: CircularProgressIndicator(),
+                      )
+                    : GoogleMap(
+                        myLocationButtonEnabled: true,
+                        mapType: MapType.normal,
+                        initialCameraPosition: CameraPosition(
+                            target: LatLng(_currentLocation.latitude,
+                                _currentLocation.longitude),
+                            zoom: 15.0),
+                        onMapCreated: onMapCreated,
+                        myLocationEnabled: true,
+                      ),
+              ),
             ),
             Flexible(
               flex: 3,
@@ -128,14 +130,11 @@ class _HomePageState extends State<HomePage> {
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
-                          color: Colors.white),
+                        borderRadius: BorderRadius.circular(10.0),
+                        color: kShrineBackgroundWhite,
+                      ),
                       child: Column(
                         children: <Widget>[
-                          _buildTextField("Enter origin", locationController),
-                          SizedBox(
-                            height: 20,
-                          ),
                           _buildTextField(
                               "Enter destination", destinationController),
                           SizedBox(
@@ -165,28 +164,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void searchAndNavigate() {
-    Geolocator().placemarkFromAddress(searchAddress).then((result) {
-      googleMapController.animateCamera(CameraUpdate.newCameraPosition(
-          CameraPosition(
-              target: LatLng(
-                  result[0].position.latitude, result[0].position.longitude),
-              zoom: 10.0)));
-    });
-  }
-
   void onMapCreated(GoogleMapController controller) {
     setState(() {
       googleMapController = controller;
-    });
-  }
-
-  void getUserLocation() async {
-    LocationService location = LocationService();
-    await location.getCurrentLocation();
-    setState(() {
-      _initialPosition = LatLng(location.latitude, location.longitude);
-      locationController.text = location.placeMark[0].name;
     });
   }
 
@@ -196,9 +176,24 @@ class _HomePageState extends State<HomePage> {
       child: TextField(
         controller: controller,
         keyboardType: TextInputType.text,
-        style: Theme.of(context).textTheme.display1,
-        decoration: InputDecoration(labelText: label),
+        style: Theme.of(context).textTheme.body2,
+        decoration: InputDecoration(
+          labelText: label,
+          errorText: _showValidationError ? "Invalid address" : null,
+        ),
       ),
     );
+  }
+
+  void _setInitialPosition() async {
+    var userLocation = LocationService();
+    _currentLocation = await userLocation.getCurrentLocation();
+    //locationController.text = userLocation.placeMark[0].name;
+
+    Location location = Location();
+    location.onLocationChanged().listen((LocationData currentLocation) {
+      _currentLocation.latitude = currentLocation.latitude;
+      _currentLocation.longitude = currentLocation.longitude;
+    });
   }
 }

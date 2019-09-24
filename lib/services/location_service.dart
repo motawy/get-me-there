@@ -1,19 +1,27 @@
-import 'package:geolocator/geolocator.dart';
+import 'dart:async';
+import 'package:location/location.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:get_me_there/models/user_location.dart';
 
-class LocationService {
-  double latitude;
-  double longitude;
-  List<Placemark> placeMark;
+class LocationService extends ChangeNotifier {
+  UserLocation _userLocation;
+  Location location = Location();
 
-  Future<void> getCurrentLocation() async {
+  get userLocation => _userLocation;
+
+  set userLocation(UserLocation location) {
+    _userLocation = location;
+    notifyListeners();
+  }
+
+  Future<UserLocation> getCurrentLocation() async {
     try {
-      Position position = await Geolocator()
-          .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      latitude = position.latitude;
-      longitude = position.longitude;
-      placeMark = await Geolocator().placemarkFromPosition(position);
+      LocationData position = await location.getLocation();
+      _userLocation = UserLocation(
+          latitude: position.latitude, longitude: position.longitude);
     } on Exception catch (e) {
       print(e);
     }
+    return _userLocation;
   }
 }

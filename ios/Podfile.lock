@@ -1,4 +1,7 @@
 PODS:
+  - connectivity (0.0.1):
+    - Flutter
+    - Reachability
   - Flutter (1.0.0)
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
@@ -15,19 +18,24 @@ PODS:
   - GoogleMaps/Base (3.4.0)
   - GoogleMaps/Maps (3.4.0):
     - GoogleMaps/Base
+  - location (0.0.1):
+    - Flutter
   - location_permissions (2.0.2):
     - Flutter
   - path_provider (0.0.1):
     - Flutter
+  - Reachability (3.2)
   - sqflite (0.0.1):
     - Flutter
     - FMDB (~> 2.7.2)
 
 DEPENDENCIES:
+  - connectivity (from `.symlinks/plugins/connectivity/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
   - geolocator (from `.symlinks/plugins/geolocator/ios`)
   - google_api_availability (from `.symlinks/plugins/google_api_availability/ios`)
   - google_maps_flutter (from `.symlinks/plugins/google_maps_flutter/ios`)
+  - location (from `.symlinks/plugins/location/ios`)
   - location_permissions (from `.symlinks/plugins/location_permissions/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
@@ -36,8 +44,11 @@ SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - FMDB
     - GoogleMaps
+    - Reachability
 
 EXTERNAL SOURCES:
+  connectivity:
+    :path: ".symlinks/plugins/connectivity/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
   geolocator:
@@ -46,6 +57,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/google_api_availability/ios"
   google_maps_flutter:
     :path: ".symlinks/plugins/google_maps_flutter/ios"
+  location:
+    :path: ".symlinks/plugins/location/ios"
   location_permissions:
     :path: ".symlinks/plugins/location_permissions/ios"
   path_provider:
@@ -54,14 +67,17 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite/ios"
 
 SPEC CHECKSUMS:
-  Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
+  connectivity: c72716e202a1225ec4810740d5cb56b8ae3bf4cc
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   geolocator: 2d5da6891d865c0f1b4f851683eed890dd9c8bc1
   google_api_availability: 163b30f802e6148c67f092aa4501c90ddd8eec8d
   google_maps_flutter: 78a52114c898b42ea647919679a4c58b70abe876
   GoogleMaps: 67f4a604f80dd6a22d09c2a507a3a395b9f23060
+  location: 3a2eed4dd2fab25e7b7baf2a9efefe82b512d740
   location_permissions: 67cfaff583afbb027a9f9248196f4b79c40f3cdc
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
+  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   sqflite: ff1d9da63c06588cc8d1faf7256d741f16989d5a
 
 PODFILE CHECKSUM: 2c26e2bafa90f053205a9e99ab1fdce88251e293
