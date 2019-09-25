@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
 import 'networking.dart';
 import 'location_service.dart';
 
 const locationWeatherURL = 'https://0.0.0.0:3000/api/weather/updateCondition';
 const hourlyWeatherURL = 'https://0.0.0.0:3000/api/weather/hourlyCondition';
 
-class WeatherModel {
+class WeatherService {
   Future<dynamic> getLocationWeather() async {
     var userLocation = await LocationService().getCurrentLocation();
 
@@ -64,11 +63,4 @@ class WeatherModel {
       return 'Bring a 🧥 just in case';
     }
   }
-}
-
-class Weather {
-  double temperature;
-  TimeOfDay
-      time; //TimeOfDay.fromDateTime(DateTime.parse('2018-10-20 16:30:04Z'))
-  String weatherIcon;
 }

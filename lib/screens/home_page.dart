@@ -1,11 +1,19 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:get_me_there/main.dart';
+import 'package:get_me_there/models/transit_model.dart';
 import 'package:get_me_there/models/user_location.dart';
+import 'package:get_me_there/services/transit_service.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+import 'package:google_maps_webservice/places.dart';
+import 'package:location/location.dart' as loc;
 import 'package:get_me_there/services/weather.dart';
-import 'package:get_me_there/weather_carousel.dart';
+import 'package:get_me_there/widget/weather_carousel.dart';
 import 'package:get_me_there/utilities/constants.dart';
 import 'package:get_me_there/services/location_service.dart';
+import 'package:uuid/uuid.dart';
 
 class HomePage extends StatefulWidget {
   final locationWeather;
@@ -16,6 +24,8 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
+GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
+
 class _HomePageState extends State<HomePage> {
   int temperature;
   String weatherIcon;
@@ -23,19 +33,21 @@ class _HomePageState extends State<HomePage> {
   String weatherMessage;
   double currentLat;
   double currentLon;
-  WeatherModel weatherModel = WeatherModel();
+  WeatherService weatherService = WeatherService();
   bool _showValidationError = false;
-
+  Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   GoogleMapController googleMapController;
-  GoogleMap mapRef;
-
+  var uuid = new Uuid();
   String searchAddress;
+  List<Connection> transitConnections = List<Connection>();
+
+  // Transit service reference
+  TransitService transitService = TransitService();
 
   TextEditingController locationController = TextEditingController();
   TextEditingController destinationController = TextEditingController();
   static UserLocation _currentLocation;
-  LatLng _lastPosition;
-  final Set<Marker> _markers = {};
+  LatLng _destinationCoord;
   final Set<Polyline> _polylines = {};
 
   @override
@@ -59,8 +71,8 @@ class _HomePageState extends State<HomePage> {
       cityName = weatherData['name'];
       currentLat = weatherData['coord']['lat'];
       currentLon = weatherData['coord']['lon'];
-      weatherIcon = weatherModel.getWeatherIcon(condition);
-      weatherMessage = weatherModel.getMessage(temperature);
+      weatherIcon = weatherService.getWeatherIcon(condition);
+      weatherMessage = weatherService.getMessage(temperature);
     });
   }
 
@@ -69,7 +81,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Flexible(
               flex: 2,
@@ -101,7 +113,9 @@ class _HomePageState extends State<HomePage> {
             ),
             Flexible(
               flex: 3,
-              child: Center(
+              child: Container(
+                width: double.infinity,
+                height: 200,
                 child: _currentLocation == null
                     ? Container(
                         alignment: Alignment.center,
@@ -116,48 +130,125 @@ class _HomePageState extends State<HomePage> {
                             zoom: 15.0),
                         onMapCreated: onMapCreated,
                         myLocationEnabled: true,
+                        markers: markers == null
+                            ? null
+                            : Set<Marker>.of(markers.values),
                       ),
               ),
             ),
             Flexible(
-              flex: 3,
-              child: Stack(
-                children: <Widget>[
-                  Positioned(
-                    top: 30.0,
-                    right: 24.0,
-                    left: 24.0,
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10.0),
-                        color: kShrineBackgroundWhite,
-                      ),
-                      child: Column(
-                        children: <Widget>[
-                          _buildTextField(
-                              "Enter destination", destinationController),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          RaisedButton(
-                            child: Text('GET ME THERE'),
-                            onPressed: () {
-                              print("GET ME THERE");
-                            },
-                            elevation: 8.0,
-                            shape: BeveledRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(7.0)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+              flex: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: kShrineBackgroundWhite,
                   ),
-                ],
+                  child: Column(
+                    children: <Widget>[
+                      _buildTextField(
+                          "Enter destination", destinationController),
+                    ],
+                  ),
+                ),
               ),
             ),
+            Flexible(
+              flex: 3,
+              child: transitConnections.length == 0
+                  ? SizedBox()
+                  : ListView.builder(
+                      itemCount: transitConnections.length,
+                      scrollDirection: Axis.vertical,
+                      itemBuilder: (context, index) {
+                        return SizedBox(
+                          height: 100.0,
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: RaisedButton(
+                              onPressed: () {},
+                              elevation: 4,
+                              shape: BeveledRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(7.0)),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  SizedBox(
+                                    width: 100,
+                                    height: 60,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: transitConnections[index]
+                                          .sections
+                                          .sec
+                                          .length,
+                                      itemBuilder: (context, i) {
+                                        return SizedBox(
+                                          width: 20,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: <Widget>[
+                                              _convertModeOfTransport(
+                                                transitConnections[index]
+                                                    .sections
+                                                    .sec[i]
+                                                    .mode,
+                                              ),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
+                                                  _parseCustomDuration(
+                                                          transitConnections[
+                                                                  index]
+                                                              .sections
+                                                              .sec[i]
+                                                              .journey
+                                                              .duration)
+                                                      .toString(),
+                                                  style:
+                                                      TextStyle(fontSize: 10)),
+                                              Text(
+                                                "min",
+                                                style: TextStyle(fontSize: 8),
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      Text(
+                                        _parseCustomDuration(
+                                                transitConnections[index]
+                                                    .duration)
+                                            .toString(),
+                                        style: kSearchHintTextStyle,
+                                      ),
+                                      Text("min")
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            )
           ],
         ),
       ),
@@ -180,7 +271,19 @@ class _HomePageState extends State<HomePage> {
         decoration: InputDecoration(
           labelText: label,
           errorText: _showValidationError ? "Invalid address" : null,
+          contentPadding: EdgeInsets.only(left: 15.0, top: 15.0),
+          prefixIcon: Icon(
+            Icons.search,
+            color: Colors.black,
+          ),
         ),
+        onTap: () async {
+          // show input autocomplete with selected mode
+          // then get the Prediction selected
+          Prediction p = await PlacesAutocomplete.show(
+              context: context, apiKey: kGoogleApiKey);
+          displayPrediction(p);
+        },
       ),
     );
   }
@@ -190,10 +293,155 @@ class _HomePageState extends State<HomePage> {
     _currentLocation = await userLocation.getCurrentLocation();
     //locationController.text = userLocation.placeMark[0].name;
 
-    Location location = Location();
-    location.onLocationChanged().listen((LocationData currentLocation) {
+    var location = loc.Location();
+    location.onLocationChanged().listen((loc.LocationData currentLocation) {
       _currentLocation.latitude = currentLocation.latitude;
       _currentLocation.longitude = currentLocation.longitude;
     });
+  }
+
+  Future<List<Address>> displayPrediction(Prediction p) async {
+    transitConnections = new List<Connection>();
+    if (p != null) {
+      PlacesDetailsResponse detail =
+          await _places.getDetailsByPlaceId(p.placeId);
+
+      var placeId = p.placeId;
+
+      double lat = detail.result.geometry.location.lat;
+      double lng = detail.result.geometry.location.lng;
+      searchAddress = p.description;
+      _destinationCoord = LatLng(lat, lng);
+      // Write address on the controller
+      destinationController.text = searchAddress;
+      // Move map towards the address
+      _addMarkerToAddress(searchAddress);
+      _moveMapToAddress();
+      // Show the options
+      var transitData = await transitService.getTransitInfo(
+          _currentLocation.latitude,
+          _currentLocation.longitude,
+          _destinationCoord.latitude,
+          _destinationCoord.longitude);
+      // Show different time for the selected option
+      _decodeTransitData(transitData);
+      setState(() {});
+      return await Geocoder.local.findAddressesFromQuery(p.description);
+    }
+    return null;
+  }
+
+  _moveMapToAddress() {
+    googleMapController.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: _destinationCoord, zoom: 15),
+      ),
+    );
+  }
+
+  _addMarkerToAddress(String address) {
+    var markerIdVal = uuid.v4();
+    final MarkerId markerId = MarkerId(markerIdVal);
+
+    // creating a new MARKER
+    final Marker marker = Marker(
+      markerId: markerId,
+      position: _destinationCoord,
+      infoWindow: InfoWindow(title: address, snippet: '*'),
+    );
+
+    setState(() {
+      // adding a new marker to map
+      markers[markerId] = marker;
+    });
+  }
+
+  _decodeTransitData(var transitData) {
+    // Grab the part needed from result
+    TransitModel transitModel = TransitModel.fromJson(transitData);
+    Res res = transitModel.res;
+    for (Connection conn in res.connections.connection) {
+      // Grab all connections for the trip
+      transitConnections.add(conn);
+    }
+    print("CONNECTIONS: ${transitConnections.length}");
+  }
+
+  int _parseCustomDuration(String duration) {
+    int finalD = 0;
+    if (duration.startsWith("PT")) {
+      duration = duration.substring(2);
+    }
+    if (duration.contains("H")) {
+      if (duration.endsWith("M")) {
+        duration = duration.substring(0, duration.length - 1);
+        var d1 = duration.split("H");
+        finalD += int.parse(d1[0]) * 60 + int.parse(d1[1]);
+      }
+
+      if (duration.endsWith("S")) {
+        duration = duration.substring(0, duration.length - 1);
+        var d1 = duration.split("H");
+        finalD += int.parse(d1[0]) * 60;
+        var d2 = d1[1].split("M");
+        finalD += int.parse(d2[0]);
+      }
+    } else if (duration.contains("M")) {
+      if (duration.endsWith("S")) {
+        duration = duration.substring(0, duration.length - 1);
+        var d = duration.split("M");
+        finalD += int.parse(d[0]);
+      } else {
+        duration = duration.substring(0, duration.length - 1);
+        finalD += int.parse(duration);
+      }
+    }
+    return finalD;
+  }
+
+  Icon _convertModeOfTransport(int mode) {
+    switch (mode) {
+      case 0:
+      case 2:
+      case 3:
+      case 4:
+        return Icon(
+          Icons.directions_subway,
+          size: 20,
+          color: Colors.blueAccent,
+        );
+      case 5:
+        return Icon(
+          Icons.directions_bus,
+          size: 20,
+          color: Colors.deepOrangeAccent,
+        );
+      case 6:
+        return Icon(
+          Icons.directions_boat,
+          size: 20,
+          color: Colors.teal,
+        );
+      case 7:
+        return Icon(
+          Icons.directions_subway,
+          size: 20,
+          color: Colors.blueAccent,
+        );
+      case 8:
+        return Icon(
+          Icons.directions_railway,
+          size: 20,
+          color: Colors.lightGreen,
+        );
+      case 20:
+        return Icon(
+          Icons.directions_walk,
+          size: 20,
+          color: Colors.black54,
+        );
+      default:
+        return null;
+    }
   }
 }
