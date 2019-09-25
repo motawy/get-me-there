@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geocoder/geocoder.dart';
-import 'package:get_me_there/main.dart';
 import 'package:get_me_there/models/transit_model.dart';
 import 'package:get_me_there/models/user_location.dart';
 import 'package:get_me_there/services/transit_service.dart';
@@ -36,6 +35,8 @@ class _HomePageState extends State<HomePage> {
   WeatherService weatherService = WeatherService();
   bool _showValidationError = false;
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+  Map<PolylineId, Polyline> polylines = <PolylineId, Polyline>{};
+  List<LatLng> polylineCoordinates = [];
   GoogleMapController googleMapController;
   var uuid = new Uuid();
   String searchAddress;
@@ -48,7 +49,6 @@ class _HomePageState extends State<HomePage> {
   TextEditingController destinationController = TextEditingController();
   static UserLocation _currentLocation;
   LatLng _destinationCoord;
-  final Set<Polyline> _polylines = {};
 
   @override
   void initState() {
@@ -83,7 +83,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Flexible(
+            Expanded(
               flex: 2,
               child: Column(
                 children: <Widget>[
@@ -111,8 +111,8 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            Flexible(
-              flex: 3,
+            Expanded(
+              flex: 4,
               child: Container(
                 width: double.infinity,
                 height: 200,
@@ -129,14 +129,20 @@ class _HomePageState extends State<HomePage> {
                                 _currentLocation.longitude),
                             zoom: 15.0),
                         onMapCreated: onMapCreated,
+                        compassEnabled: true,
+                        scrollGesturesEnabled: true,
+                        zoomGesturesEnabled: true,
                         myLocationEnabled: true,
                         markers: markers == null
                             ? null
                             : Set<Marker>.of(markers.values),
+                        polylines: polylines == null
+                            ? null
+                            : Set<Polyline>.of(polylines.values),
                       ),
               ),
             ),
-            Flexible(
+            Expanded(
               flex: 1,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -155,8 +161,8 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            Flexible(
-              flex: 3,
+            Expanded(
+              flex: 2,
               child: transitConnections.length == 0
                   ? SizedBox()
                   : ListView.builder(
@@ -168,7 +174,11 @@ class _HomePageState extends State<HomePage> {
                           child: Padding(
                             padding: EdgeInsets.all(8.0),
                             child: RaisedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                var values =
+                                    transitConnections[index].sections.sec;
+                                _onOptionPressed(values);
+                              },
                               elevation: 4,
                               shape: BeveledRectangleBorder(
                                 borderRadius:
@@ -306,7 +316,7 @@ class _HomePageState extends State<HomePage> {
       PlacesDetailsResponse detail =
           await _places.getDetailsByPlaceId(p.placeId);
 
-      var placeId = p.placeId;
+      //var placeId = p.placeId;
 
       double lat = detail.result.geometry.location.lat;
       double lng = detail.result.geometry.location.lng;
@@ -444,4 +454,67 @@ class _HomePageState extends State<HomePage> {
         return null;
     }
   }
+
+  _addPolyLine() {
+    var polyIdVal = uuid.v4();
+    PolylineId id = PolylineId(polyIdVal);
+    Polyline polyline = Polyline(
+        polylineId: id, color: Colors.blueAccent, points: polylineCoordinates);
+    polylines[id] = polyline;
+    setState(() {});
+  }
+
+  _onOptionPressed(values) {
+    polylines = {};
+    polylineCoordinates = new List<LatLng>();
+    for (Sec sec in values) {
+      Dep dep = sec.dep;
+      Arr arr = sec.arr;
+      // Grab departure coordinates
+      if (dep.stn == null) {
+        polylineCoordinates.add(LatLng(dep.addr.y, dep.addr.x));
+      } else if (dep.addr == null) {
+        polylineCoordinates.add(LatLng(dep.stn.y, dep.stn.x));
+      }
+
+      // Grab all stops in not walking
+      if (sec.journey.stop != null) {
+        print("GRABBING STOPS");
+        for (Stop stop in sec.journey.stop) {
+          polylineCoordinates.add(LatLng(stop.stn.y, stop.stn.x));
+        }
+      }
+
+      // Grab departure coordinates
+      if (arr.stn == null) {
+        polylineCoordinates.add(LatLng(arr.addr.y, arr.addr.x));
+      } else if (arr.addr == null) {
+        polylineCoordinates.add(LatLng(arr.stn.y, arr.stn.x));
+      }
+    }
+    _addPolyLine();
+  }
+
+//  Color _getColorForMap(int mode) {
+//    switch (mode) {
+//      case 0:
+//      case 2:
+//      case 3:
+//      case 4:
+//        return Colors.blueAccent;
+//      case 5:
+//        return Colors.deepOrangeAccent;
+//      case 6:
+//        return Colors.teal;
+//      case 7:
+//        return Colors.blueAccent;
+//      case 8:
+//        return Colors.green;
+//
+//      case 20:
+//        return Colors.black54;
+//      default:
+//        return null;
+//    }
+//  }
 }

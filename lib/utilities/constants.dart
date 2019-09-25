@@ -40,3 +40,6 @@ const kShrineBrown = const Color(0xFF442B2D);
 const kShrineErrorRed = const Color(0xFFC5032B);
 const kShrineWhite = const Color(0xFFFFFBFA);
 const kShrineBackgroundWhite = Colors.white;
+Color firstColor = Color(0xFF7A36DC);
+Color secondColor = Color(0xFF7A36DC).withOpacity(0.5);
+Color thirdColor = Color(0xFF7A36DC).withOpacity(0.2);
