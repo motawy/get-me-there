@@ -21,11 +21,17 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   void getLocationData() async {
     dynamic weatherData = await WeatherService().getLocationWeather();
-    Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return HomePage(
-        locationWeather: weatherData,
-      );
-    }));
+    dynamic hourlyData = await WeatherService().getHourlyWeather();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          return HomePage(
+              locationWeather: weatherData, hourlyWeather: hourlyData);
+        },
+      ),
+    );
   }
 
   @override

@@ -4,7 +4,9 @@ import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:get_me_there/models/transit_model.dart';
 import 'package:get_me_there/models/user_location.dart';
+import 'package:get_me_there/screens/route_details.dart';
 import 'package:get_me_there/services/transit_service.dart';
+import 'package:get_me_there/widget/top_part.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:location/location.dart' as loc;
@@ -16,8 +18,8 @@ import 'package:uuid/uuid.dart';
 
 class HomePage extends StatefulWidget {
   final locationWeather;
-
-  HomePage({this.locationWeather});
+  final hourlyWeather;
+  HomePage({this.locationWeather, this.hourlyWeather});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -34,6 +36,7 @@ class _HomePageState extends State<HomePage> {
   double currentLon;
   WeatherService weatherService = WeatherService();
   bool _showValidationError = false;
+  bool _isOptionSelected = false;
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   Map<PolylineId, Polyline> polylines = <PolylineId, Polyline>{};
   List<LatLng> polylineCoordinates = [];
@@ -80,185 +83,227 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+        child: Stack(
           children: <Widget>[
-            Expanded(
-              flex: 2,
+            TopPart(),
+            Container(
+              height: MediaQuery.of(context).size.height,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        '$temperature°',
-                        style: kTempTextStyle,
-                      ),
-                      Text(
-                        weatherIcon,
-                        style: kConditionTextStyle,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16.0),
-                        child: Text(
-                          cityName,
-                          style: kCityNameTextStyle,
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: <Widget>[
+                            Text(
+                              '$temperature°',
+                              style: kTempTextStyle,
+                            ),
+                            Text(
+                              weatherIcon,
+                              style: kConditionTextStyle,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16.0),
+                              child: Text(
+                                cityName,
+                                style: kCityNameTextStyle,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                        Padding(
+                          padding: EdgeInsets.only(top: 8.0),
+                          child: WeatherCarousel(
+                            weatherList: widget.hourlyWeather,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  Container(color: kShrinePink, child: WeatherCarousel()),
+                  Expanded(
+                    flex: 4,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: <Widget>[
+                        FractionallySizedBox(
+                          alignment: Alignment.topCenter,
+                          heightFactor: 0.8,
+                          child: _currentLocation == null
+                              ? Container(
+                                  alignment: Alignment.center,
+                                  child: CircularProgressIndicator(),
+                                )
+                              : GoogleMap(
+                                  myLocationButtonEnabled: true,
+                                  mapType: MapType.normal,
+                                  initialCameraPosition: CameraPosition(
+                                      target: LatLng(_currentLocation.latitude,
+                                          _currentLocation.longitude),
+                                      zoom: 15.0),
+                                  onMapCreated: onMapCreated,
+                                  compassEnabled: true,
+                                  scrollGesturesEnabled: true,
+                                  zoomGesturesEnabled: true,
+                                  myLocationEnabled: true,
+                                  markers: markers == null
+                                      ? null
+                                      : Set<Marker>.of(markers.values),
+                                  polylines: polylines == null
+                                      ? null
+                                      : Set<Polyline>.of(polylines.values),
+                                ),
+                        ),
+                        _isOptionSelected
+                            ? Positioned(
+                                bottom: 90,
+                                left: 10,
+                                width: 60,
+                                height: 60,
+                                child: FloatingActionButton(
+                                  backgroundColor: kGMTsecondary,
+                                  child: Icon(Icons.directions),
+                                  onPressed: () {
+                                    // Go to details page!
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return RouteDetails(
+                                            transit: transitConnections,
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              )
+                            : SizedBox(),
+                        FractionallySizedBox(
+                          heightFactor: 1 - 0.8,
+                          alignment: Alignment.bottomCenter,
+                          child: Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: _buildTextField(
+                                "Enter destination", destinationController),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: 200,
+                    child: transitConnections.length == 0
+                        ? SizedBox()
+                        : ListView.builder(
+                            itemCount: transitConnections.length,
+                            scrollDirection: Axis.vertical,
+                            itemBuilder: (context, index) {
+                              return SizedBox(
+                                height: 100.0,
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: RaisedButton(
+                                    color: kGMTprimaryLight,
+                                    onPressed: () {
+                                      _isOptionSelected = true;
+                                      var values = transitConnections[index]
+                                          .sections
+                                          .sec;
+                                      _onOptionPressed(values);
+                                    },
+                                    elevation: 4,
+                                    shape: BeveledRectangleBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(7.0)),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        SizedBox(
+                                          width: 300,
+                                          height: 60,
+                                          child: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: transitConnections[index]
+                                                .sections
+                                                .sec
+                                                .length,
+                                            itemBuilder: (context, i) {
+                                              return SizedBox(
+                                                width: 30,
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    _convertModeOfTransport(
+                                                      transitConnections[index]
+                                                          .sections
+                                                          .sec[i]
+                                                          .mode,
+                                                    ),
+                                                    SizedBox(
+                                                      height: 5,
+                                                    ),
+                                                    Text(
+                                                        _parseCustomDuration(
+                                                                transitConnections[
+                                                                        index]
+                                                                    .sections
+                                                                    .sec[i]
+                                                                    .journey
+                                                                    .duration)
+                                                            .toString(),
+                                                        style: TextStyle(
+                                                            fontSize: 12)),
+                                                    Text(
+                                                      "min",
+                                                      style: TextStyle(
+                                                          fontSize: 8),
+                                                    )
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: <Widget>[
+                                            Text(
+                                              _parseCustomDuration(
+                                                      transitConnections[index]
+                                                          .duration)
+                                                  .toString(),
+                                              style: kButtonTextStyle,
+                                            ),
+                                            Text("min")
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
                 ],
               ),
             ),
-            Expanded(
-              flex: 4,
-              child: Container(
-                width: double.infinity,
-                height: 200,
-                child: _currentLocation == null
-                    ? Container(
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator(),
-                      )
-                    : GoogleMap(
-                        myLocationButtonEnabled: true,
-                        mapType: MapType.normal,
-                        initialCameraPosition: CameraPosition(
-                            target: LatLng(_currentLocation.latitude,
-                                _currentLocation.longitude),
-                            zoom: 15.0),
-                        onMapCreated: onMapCreated,
-                        compassEnabled: true,
-                        scrollGesturesEnabled: true,
-                        zoomGesturesEnabled: true,
-                        myLocationEnabled: true,
-                        markers: markers == null
-                            ? null
-                            : Set<Marker>.of(markers.values),
-                        polylines: polylines == null
-                            ? null
-                            : Set<Polyline>.of(polylines.values),
-                      ),
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: kShrineBackgroundWhite,
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      _buildTextField(
-                          "Enter destination", destinationController),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 2,
-              child: transitConnections.length == 0
-                  ? SizedBox()
-                  : ListView.builder(
-                      itemCount: transitConnections.length,
-                      scrollDirection: Axis.vertical,
-                      itemBuilder: (context, index) {
-                        return SizedBox(
-                          height: 100.0,
-                          child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: RaisedButton(
-                              onPressed: () {
-                                var values =
-                                    transitConnections[index].sections.sec;
-                                _onOptionPressed(values);
-                              },
-                              elevation: 4,
-                              shape: BeveledRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(7.0)),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  SizedBox(
-                                    width: 100,
-                                    height: 60,
-                                    child: ListView.builder(
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: transitConnections[index]
-                                          .sections
-                                          .sec
-                                          .length,
-                                      itemBuilder: (context, i) {
-                                        return SizedBox(
-                                          width: 20,
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: <Widget>[
-                                              _convertModeOfTransport(
-                                                transitConnections[index]
-                                                    .sections
-                                                    .sec[i]
-                                                    .mode,
-                                              ),
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-                                              Text(
-                                                  _parseCustomDuration(
-                                                          transitConnections[
-                                                                  index]
-                                                              .sections
-                                                              .sec[i]
-                                                              .journey
-                                                              .duration)
-                                                      .toString(),
-                                                  style:
-                                                      TextStyle(fontSize: 10)),
-                                              Text(
-                                                "min",
-                                                style: TextStyle(fontSize: 8),
-                                              )
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: <Widget>[
-                                      Text(
-                                        _parseCustomDuration(
-                                                transitConnections[index]
-                                                    .duration)
-                                            .toString(),
-                                        style: kSearchHintTextStyle,
-                                      ),
-                                      Text("min")
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            )
           ],
         ),
       ),
@@ -273,7 +318,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildTextField(String label, TextEditingController controller) {
     return Theme(
-      data: Theme.of(context).copyWith(primaryColor: kShrineBrown),
+      data: Theme.of(context).copyWith(primaryColor: Colors.black),
       child: TextField(
         controller: controller,
         keyboardType: TextInputType.text,
@@ -312,6 +357,10 @@ class _HomePageState extends State<HomePage> {
 
   Future<List<Address>> displayPrediction(Prediction p) async {
     transitConnections = new List<Connection>();
+    markers = {};
+    polylines = {};
+    _isOptionSelected = false;
+    destinationController.text = "";
     if (p != null) {
       PlacesDetailsResponse detail =
           await _places.getDetailsByPlaceId(p.placeId);
@@ -326,7 +375,7 @@ class _HomePageState extends State<HomePage> {
       destinationController.text = searchAddress;
       // Move map towards the address
       _addMarkerToAddress(searchAddress);
-      _moveMapToAddress();
+      _moveMapToAddress(_destinationCoord, 12);
       // Show the options
       var transitData = await transitService.getTransitInfo(
           _currentLocation.latitude,
@@ -341,10 +390,10 @@ class _HomePageState extends State<HomePage> {
     return null;
   }
 
-  _moveMapToAddress() {
+  _moveMapToAddress(LatLng point, double zoom) {
     googleMapController.animateCamera(
       CameraUpdate.newCameraPosition(
-        CameraPosition(target: _destinationCoord, zoom: 15),
+        CameraPosition(target: point, zoom: zoom),
       ),
     );
   }
@@ -410,6 +459,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Icon _convertModeOfTransport(int mode) {
+    double size = 30;
     switch (mode) {
       case 0:
       case 2:
@@ -417,37 +467,37 @@ class _HomePageState extends State<HomePage> {
       case 4:
         return Icon(
           Icons.directions_subway,
-          size: 20,
+          size: size,
           color: Colors.blueAccent,
         );
       case 5:
         return Icon(
           Icons.directions_bus,
-          size: 20,
+          size: size,
           color: Colors.deepOrangeAccent,
         );
       case 6:
         return Icon(
           Icons.directions_boat,
-          size: 20,
+          size: size,
           color: Colors.teal,
         );
       case 7:
         return Icon(
           Icons.directions_subway,
-          size: 20,
+          size: size,
           color: Colors.blueAccent,
         );
       case 8:
         return Icon(
           Icons.directions_railway,
-          size: 20,
+          size: size,
           color: Colors.lightGreen,
         );
       case 20:
         return Icon(
           Icons.directions_walk,
-          size: 20,
+          size: size,
           color: Colors.black54,
         );
       default:
@@ -492,6 +542,8 @@ class _HomePageState extends State<HomePage> {
         polylineCoordinates.add(LatLng(arr.stn.y, arr.stn.x));
       }
     }
+    _moveMapToAddress(
+        LatLng(_currentLocation.latitude, _currentLocation.longitude), 12);
     _addPolyLine();
   }
 

@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:get_me_there/models/weather_model.dart';
+
 import 'networking.dart';
 import 'location_service.dart';
 
@@ -19,17 +22,31 @@ class WeatherService {
     return currentWeatherData;
   }
 
-  Future<dynamic> getHourlyWeather() async {
+  dynamic getHourlyWeather() async {
     var userLocation = await LocationService().getCurrentLocation();
     Map body = {"lat": userLocation.latitude, "lon": userLocation.longitude};
     NetWorkHelper netWorkHelper = NetWorkHelper(hourlyWeatherURL, body);
     var hourlyWeatherData;
+    List<WeatherModel> weatherList = List<WeatherModel>();
     try {
       hourlyWeatherData = await netWorkHelper.getData();
+      int count = 0;
+      WeatherService weatherService = WeatherService();
+
+      for (var item in hourlyWeatherData["list"]) {
+        WeatherModel weather = WeatherModel();
+        weather.temperature = item['main']['temp'].toDouble();
+        weather.time = TimeOfDay.fromDateTime(DateTime.parse(item['dt_txt']));
+        weather.weatherIcon =
+            weatherService.getWeatherIcon(item['weather'][0]['id']);
+        weatherList.add(weather);
+        count++;
+        if (count == 10) break;
+      }
     } catch (e) {
       print("Error caught: " + e.toString());
     }
-    return hourlyWeatherData;
+    return weatherList;
   }
 
   String getWeatherIcon(int condition) {

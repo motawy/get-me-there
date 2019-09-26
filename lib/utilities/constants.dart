@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 const kTempTextStyle =
-    TextStyle(fontFamily: 'Spartan MB', fontSize: 40.0, color: Colors.black);
+    TextStyle(fontFamily: 'Spartan MB', fontSize: 50.0, color: Colors.black);
 
 const kCityNameTextStyle =
-    TextStyle(fontFamily: 'Spartan MB', fontSize: 20.0, color: Colors.black);
+    TextStyle(fontFamily: 'Spartan MB', fontSize: 30.0, color: Colors.black);
 
 const kSearchHintTextStyle =
     TextStyle(fontFamily: 'Spartan MB', fontSize: 20.0, color: Colors.grey);
@@ -34,12 +34,13 @@ const kTextFieldInputDecoration = InputDecoration(
 
 const kGoogleApiKey = "AIzaSyBdYAcKSIYMI8zxBGv9uAJwQF81hqIb-h8";
 
-const kShrinePinkSecondary = const Color(0xFFFEEAE6);
-const kShrinePink = const Color(0xFFFEDBD0);
-const kShrineBrown = const Color(0xFF442B2D);
-const kShrineErrorRed = const Color(0xFFC5032B);
-const kShrineWhite = const Color(0xFFFFFBFA);
-const kShrineBackgroundWhite = Colors.white;
+const kGMTprimary = const Color(0xFF3A6D8C);
+const kGMTprimaryLight = const Color(0xFF7EADBF);
+const kGMTlight = const Color(0xFFF2F1DF);
+const kGMTsecondary = const Color(0xFF8C594D);
+const kGMTsecondaryLight = const Color(0xFFBF9775);
+const kGMTerror = const Color(0xFFFF0066);
+const kGMTwhite = Colors.white;
 Color firstColor = Color(0xFF7A36DC);
 Color secondColor = Color(0xFF7A36DC).withOpacity(0.5);
 Color thirdColor = Color(0xFF7A36DC).withOpacity(0.2);

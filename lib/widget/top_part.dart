@@ -5,8 +5,8 @@ class TopPart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      child: FractionallySizedBox(
-        heightFactor: 0.3,
+      child: Container(
+        height: 250,
       ),
       painter: CurvesPainter(),
     );
@@ -32,7 +32,7 @@ class CurvesPainter extends CustomPainter {
         size.width * 0.70, size.height * 0.90, size.width, 0);
     path.close();
 
-    paint.color = thirdColor;
+    paint.color = kGMTlight;
     canvas.drawPath(path, paint);
 
     path = Path();
@@ -50,7 +50,7 @@ class CurvesPainter extends CustomPainter {
     path.lineTo(size.width, 0);
     path.close();
 
-    paint.color = secondColor;
+    paint.color = kGMTprimaryLight;
     canvas.drawPath(path, paint);
 
     path = Path();
@@ -66,7 +66,7 @@ class CurvesPainter extends CustomPainter {
     path.lineTo(size.width, 0);
     path.close();
 
-    paint.color = firstColor;
+    paint.color = kGMTprimary;
     canvas.drawPath(path, paint);
   }
 

@@ -21,18 +21,18 @@ final ThemeData _appTheme = _buildTheme();
 ThemeData _buildTheme() {
   final ThemeData base = ThemeData.light();
   return base.copyWith(
-    accentColor: kShrineBrown,
-    primaryColor: kShrinePink,
-    buttonColor: kShrinePink,
-    scaffoldBackgroundColor: kShrineBackgroundWhite,
-    cardColor: kShrineBackgroundWhite,
-    textSelectionColor: kShrinePink,
-    errorColor: kShrineErrorRed,
+    accentColor: kGMTsecondaryLight,
+    primaryColor: kGMTprimary,
+    buttonColor: kGMTsecondary,
+    scaffoldBackgroundColor: kGMTwhite,
+    cardColor: kGMTwhite,
+    textSelectionColor: firstColor,
+    errorColor: kGMTerror,
     buttonTheme: base.buttonTheme.copyWith(
-      buttonColor: kShrinePink,
+      buttonColor: kGMTsecondary,
       textTheme: ButtonTextTheme.normal,
     ),
-    primaryIconTheme: base.iconTheme.copyWith(color: kShrineBrown),
+    primaryIconTheme: base.iconTheme.copyWith(color: kGMTlight),
     inputDecorationTheme: InputDecorationTheme(
       border: CutCornersBorder(),
     ),
@@ -60,7 +60,7 @@ TextTheme _buildTextTheme(TextTheme base) {
       )
       .apply(
         fontFamily: 'Rubik',
-        displayColor: kShrineBrown,
-        bodyColor: kShrineBrown,
+        displayColor: Colors.black87,
+        bodyColor: Colors.black87,
       );
 }

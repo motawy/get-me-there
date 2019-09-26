@@ -1,36 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:get_me_there/models/weather_model.dart';
 import 'package:get_me_there/services/weather.dart';
 import 'package:get_me_there/utilities/constants.dart';
-import 'package:get_me_there/models/weather_model.dart';
 
 class WeatherCarousel extends StatefulWidget {
+  final List<WeatherModel> weatherList;
+  WeatherCarousel({this.weatherList});
   @override
   _WeatherCarouselState createState() => _WeatherCarouselState();
 }
 
 class _WeatherCarouselState extends State<WeatherCarousel> {
-  List<WeatherModel> weatherList = List<WeatherModel>();
   var weatherService = WeatherService();
   @override
   void initState() {
-    getHourlyWeather();
     super.initState();
-  }
-
-  void getHourlyWeather() async {
-    dynamic weatherJSON = await weatherService.getHourlyWeather();
-    int count = 0;
-    for (var item in weatherJSON["list"]) {
-      WeatherModel weather = WeatherModel();
-      weather.temperature = item['main']['temp'].toDouble();
-      weather.time = TimeOfDay.fromDateTime(DateTime.parse(item['dt_txt']));
-      weather.weatherIcon =
-          weatherService.getWeatherIcon(item['weather'][0]['id']);
-      weatherList.add(weather);
-      count++;
-      if (count == 10) break;
-    }
   }
 
   @override
@@ -39,7 +24,7 @@ class _WeatherCarouselState extends State<WeatherCarousel> {
       padding: EdgeInsets.symmetric(vertical: 4),
       child: SizedBox(
         height: 120.0,
-        child: weatherList.length == 0
+        child: widget.weatherList.length == 0
             ? Center(
                 child: SpinKitChasingDots(
                   color: Colors.black,
@@ -48,7 +33,7 @@ class _WeatherCarouselState extends State<WeatherCarousel> {
               )
             : ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: weatherList.length,
+                itemCount: widget.weatherList.length,
                 itemBuilder: (context, index) {
                   return SizedBox(
                     width: 100.0,
@@ -60,17 +45,17 @@ class _WeatherCarouselState extends State<WeatherCarousel> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                weatherList[index].weatherIcon,
+                                widget.weatherList[index].weatherIcon,
                                 style: kConditionTextStyle,
                               ),
-                              Text(weatherList[index]
-                                      .temperature
+                              Text(widget.weatherList[index].temperature
                                       .toStringAsFixed(0) +
                                   "°"),
                               SizedBox(
                                 height: 10,
                               ),
-                              Text(weatherList[index].time.hour.toString()),
+                              Text(widget.weatherList[index].time.hour
+                                  .toString()),
                             ],
                           ),
                         ),
