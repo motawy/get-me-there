@@ -5,6 +5,7 @@ import 'package:geocoder/geocoder.dart';
 import 'package:get_me_there/models/transit_model.dart';
 import 'package:get_me_there/models/user_location.dart';
 import 'package:get_me_there/screens/route_details.dart';
+import 'package:get_me_there/screens/transit_steps.dart';
 import 'package:get_me_there/services/transit_service.dart';
 import 'package:get_me_there/widget/top_part.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -44,7 +45,7 @@ class _HomePageState extends State<HomePage> {
   var uuid = new Uuid();
   String searchAddress;
   List<Connection> transitConnections = List<Connection>();
-
+  List<Sec> _selectedSection = List<Sec>();
   // Transit service reference
   TransitService transitService = TransitService();
 
@@ -82,11 +83,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: <Widget>[
-            TopPart(),
-            Container(
+      body: Stack(
+        children: <Widget>[
+          TopPart(),
+          SafeArea(
+            child: Container(
               height: MediaQuery.of(context).size.height,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -174,9 +175,15 @@ class _HomePageState extends State<HomePage> {
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) {
-                                          return RouteDetails(
-                                            transit: transitConnections,
+                                          return TransitSteps(
+                                            position: _currentLocation,
+                                            sections: _selectedSection,
+                                            markers: markers,
+                                            polylines: polylines,
                                           );
+//                                          return RouteDetails(
+//                                            sections: _selectedSection,
+//                                          );
                                         },
                                       ),
                                     );
@@ -212,10 +219,11 @@ class _HomePageState extends State<HomePage> {
                                     color: kGMTprimaryLight,
                                     onPressed: () {
                                       _isOptionSelected = true;
-                                      var values = transitConnections[index]
-                                          .sections
-                                          .sec;
-                                      _onOptionPressed(values);
+                                      _selectedSection =
+                                          transitConnections[index]
+                                              .sections
+                                              .sec;
+                                      _onOptionPressed(_selectedSection);
                                     },
                                     elevation: 4,
                                     shape: BeveledRectangleBorder(
@@ -304,8 +312,8 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -542,9 +550,14 @@ class _HomePageState extends State<HomePage> {
         polylineCoordinates.add(LatLng(arr.stn.y, arr.stn.x));
       }
     }
-    _moveMapToAddress(
-        LatLng(_currentLocation.latitude, _currentLocation.longitude), 12);
+    _animateCameraToShowTransit();
     _addPolyLine();
+  }
+
+  _animateCameraToShowTransit() {
+    googleMapController.animateCamera(
+      CameraUpdate.zoomTo(11.0),
+    );
   }
 
 //  Color _getColorForMap(int mode) {
