@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 
-const kTempTextStyle =
-    TextStyle(fontFamily: 'Spartan MB', fontSize: 50.0, color: Colors.black);
+const kTempTextStyle = TextStyle(fontSize: 50.0, color: kGMTwhite);
 
-const kCityNameTextStyle =
-    TextStyle(fontFamily: 'Spartan MB', fontSize: 30.0, color: Colors.black);
+const kCityNameTextStyle = TextStyle(fontSize: 30.0, color: kGMTwhite);
 
-const kSearchHintTextStyle =
-    TextStyle(fontFamily: 'Spartan MB', fontSize: 20.0, color: Colors.grey);
+const kSearchHintTextStyle = TextStyle(fontSize: 20.0, color: Colors.grey);
 
-const kButtonTextStyle =
-    TextStyle(fontSize: 30.0, fontFamily: 'Spartan MB', color: Colors.black);
+const kButtonTextStyle = TextStyle(fontSize: 30.0, color: Colors.black);
 
 const kConditionTextStyle = TextStyle(
   fontSize: 40.0,
@@ -32,6 +28,7 @@ const kTextFieldInputDecoration = InputDecoration(
       borderSide: BorderSide.none),
 );
 
+// Need to hide this
 const kGoogleApiKey = "AIzaSyBdYAcKSIYMI8zxBGv9uAJwQF81hqIb-h8";
 
 const kGMTprimary = const Color(0xFF3A6D8C);
@@ -41,6 +38,8 @@ const kGMTsecondary = const Color(0xFF8C594D);
 const kGMTsecondaryLight = const Color(0xFFBF9775);
 const kGMTerror = const Color(0xFFFF0066);
 const kGMTwhite = Colors.white;
+
+// Trying different colors
 Color firstColor = Color(0xFF7A36DC);
 Color secondColor = Color(0xFF7A36DC).withOpacity(0.5);
 Color thirdColor = Color(0xFF7A36DC).withOpacity(0.2);

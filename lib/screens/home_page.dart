@@ -99,7 +99,7 @@ class _HomePageState extends State<HomePage> {
                       children: <Widget>[
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
                             Text(
                               '$temperature°',
@@ -146,7 +146,7 @@ class _HomePageState extends State<HomePage> {
                                   initialCameraPosition: CameraPosition(
                                       target: LatLng(_currentLocation.latitude,
                                           _currentLocation.longitude),
-                                      zoom: 15.0),
+                                      zoom: 14.0),
                                   onMapCreated: onMapCreated,
                                   compassEnabled: true,
                                   scrollGesturesEnabled: true,
@@ -167,7 +167,7 @@ class _HomePageState extends State<HomePage> {
                                 width: 60,
                                 height: 60,
                                 child: FloatingActionButton(
-                                  backgroundColor: kGMTsecondary,
+                                  backgroundColor: Colors.teal,
                                   child: Icon(Icons.directions),
                                   onPressed: () {
                                     // Go to details page!
@@ -216,7 +216,7 @@ class _HomePageState extends State<HomePage> {
                                 child: Padding(
                                   padding: EdgeInsets.all(8.0),
                                   child: RaisedButton(
-                                    color: kGMTprimaryLight,
+                                    color: kGMTwhite,
                                     onPressed: () {
                                       _isOptionSelected = true;
                                       _selectedSection =
@@ -226,9 +226,11 @@ class _HomePageState extends State<HomePage> {
                                       _onOptionPressed(_selectedSection);
                                     },
                                     elevation: 4,
-                                    shape: BeveledRectangleBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(7.0)),
+                                    shape: StadiumBorder(
+                                      side: BorderSide(
+                                        color: kGMTprimary,
+                                        width: 4.0,
+                                      ),
                                     ),
                                     child: Row(
                                       mainAxisAlignment:

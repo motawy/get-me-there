@@ -6,7 +6,7 @@ class TopPart extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       child: Container(
-        height: 250,
+        height: 200,
       ),
       painter: CurvesPainter(),
     );
@@ -32,7 +32,7 @@ class CurvesPainter extends CustomPainter {
         size.width * 0.70, size.height * 0.90, size.width, 0);
     path.close();
 
-    paint.color = kGMTlight;
+    paint.color = kGMTprimaryLight.withOpacity(0.6);
     canvas.drawPath(path, paint);
 
     path = Path();

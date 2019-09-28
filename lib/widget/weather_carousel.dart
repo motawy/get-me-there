@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get_me_there/models/weather_model.dart';
 import 'package:get_me_there/services/weather.dart';
 import 'package:get_me_there/utilities/constants.dart';
+import 'package:get_me_there/utilities/cut_corners.dart';
 
 class WeatherCarousel extends StatefulWidget {
   final List<WeatherModel> weatherList;
@@ -40,6 +43,12 @@ class _WeatherCarouselState extends State<WeatherCarousel> {
                     child: Padding(
                       padding: EdgeInsets.only(left: 8.0),
                       child: Card(
+                        elevation: 10,
+                        shape: StadiumBorder(
+                            side: BorderSide(
+                          color: Colors.black,
+                          width: 2.0,
+                        )),
                         child: Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,

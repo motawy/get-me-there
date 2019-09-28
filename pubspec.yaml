@@ -32,12 +32,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - images/
 
 fonts:
-  - family: Rubik
+  - family: FredokaOne
     fonts:
-      - asset: fonts/Rubik-Regular.ttf
-      - asset: fonts/Rubik-Medium.ttf
+      - asset: fonts/FredokaOne-Regular.ttf
         weight: 500

@@ -44,7 +44,7 @@ class _TransitStepsState extends State<TransitSteps> {
         children: <Widget>[
           GoogleMap(
             onMapCreated: onMapCreated,
-            myLocationButtonEnabled: true,
+            myLocationButtonEnabled: false,
             mapType: MapType.normal,
             compassEnabled: true,
             scrollGesturesEnabled: true,
@@ -57,7 +57,7 @@ class _TransitStepsState extends State<TransitSteps> {
                 ? null
                 : Set<Polyline>.of(widget.polylines.values),
             initialCameraPosition:
-                CameraPosition(target: stepPosition, zoom: 15),
+                CameraPosition(target: stepPosition, zoom: 13),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 30.0),
@@ -68,7 +68,7 @@ class _TransitStepsState extends State<TransitSteps> {
                     : isTransport = true;
                 return isTransport
                     ? FractionallySizedBox(
-                        heightFactor: 0.3,
+                        heightFactor: 0.32,
                         widthFactor: 0.9,
                         alignment: Alignment.topCenter,
                         child: Card(
@@ -157,7 +157,7 @@ class _TransitStepsState extends State<TransitSteps> {
                                   ],
                                 ),
                                 SizedBox(
-                                  height: 20,
+                                  height: 8,
                                 ),
                                 Align(
                                   alignment: Alignment.bottomRight,
@@ -166,17 +166,48 @@ class _TransitStepsState extends State<TransitSteps> {
                                         MainAxisAlignment.spaceEvenly,
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: <Widget>[
-                                      Text(sec[index]
-                                              .journey
-                                              .distance
-                                              .toString() +
-                                          " M"),
-                                      Text(
-                                        _parseCustomDuration(
-                                                    sec[index].journey.duration)
-                                                .toString() +
-                                            " min",
-                                        style: TextStyle(fontSize: 16),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.pin_drop,
+                                            color: kGMTlight,
+                                          ),
+                                          SizedBox(
+                                            width: 8,
+                                          ),
+                                          Text(_convertDistance(
+                                              sec[index].journey.distance)),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: 8,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.timer,
+                                            color: kGMTlight,
+                                          ),
+                                          SizedBox(
+                                            width: 8,
+                                          ),
+                                          Text(
+                                            _parseCustomDuration(sec[index]
+                                                        .journey
+                                                        .duration)
+                                                    .toString() +
+                                                " min",
+                                            style: TextStyle(fontSize: 16),
+                                          ),
+                                        ],
                                       )
                                     ],
                                   ),
@@ -209,7 +240,7 @@ class _TransitStepsState extends State<TransitSteps> {
                                       child: Padding(
                                         padding: EdgeInsets.all(4.0),
                                         child: Text(
-                                          "Walk your ass",
+                                          "Walk",
                                           style: TextStyle(
                                               color: kGMTlight,
                                               fontWeight: FontWeight.bold,
@@ -230,13 +261,79 @@ class _TransitStepsState extends State<TransitSteps> {
                                       "To",
                                       style: TextStyle(fontSize: 12),
                                     ),
-                                    Text(
-                                      _cutStopName(sec[index].arr.stn.name),
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
+                                    index == sec.length - 1
+                                        ? Text(
+                                            "Destination",
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
+                                          )
+                                        : Text(
+                                            _cutStopName(
+                                                sec[index].arr.stn.name),
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
+                                          ),
                                   ],
+                                ),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: <Widget>[
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.pin_drop,
+                                            color: kGMTlight,
+                                          ),
+                                          SizedBox(
+                                            width: 8,
+                                          ),
+                                          Text(
+                                            _convertDistance(
+                                                sec[index].journey.distance),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: 8,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.timer,
+                                            color: kGMTlight,
+                                          ),
+                                          SizedBox(
+                                            width: 8,
+                                          ),
+                                          Text(
+                                            _parseCustomDuration(sec[index]
+                                                        .journey
+                                                        .duration)
+                                                    .toString() +
+                                                " min",
+                                            style: TextStyle(fontSize: 16),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -249,7 +346,16 @@ class _TransitStepsState extends State<TransitSteps> {
               itemCount: sec.length,
               index: 0,
               onIndexChanged: (int index) {
-                index++;
+                var coord;
+                if (index == 0) {
+                  coord = LatLng(sec[index].dep.addr.y, sec[index].dep.addr.x);
+                } else {
+                  coord = LatLng(sec[index].dep.stn.y, sec[index].dep.stn.x);
+                }
+
+                _controller.animateCamera(
+                  CameraUpdate.newLatLng(coord),
+                );
               },
               pagination: new SwiperPagination(),
               control: new SwiperControl(),
@@ -346,5 +452,12 @@ class _TransitStepsState extends State<TransitSteps> {
   String _cutStopName(String stop) {
     var stopName = stop.split("(");
     return stopName[0];
+  }
+
+  String _convertDistance(int distance) {
+    if (distance.toString().length > 3) {
+      return (distance / 1000).toStringAsFixed(1) + " KM";
+    } else
+      return distance.toString() + " M";
   }
 }
