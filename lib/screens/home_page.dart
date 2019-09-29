@@ -321,9 +321,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void onMapCreated(GoogleMapController controller) {
-    setState(() {
-      googleMapController = controller;
-    });
+    googleMapController = controller;
   }
 
   Widget _buildTextField(String label, TextEditingController controller) {
@@ -334,6 +332,11 @@ class _HomePageState extends State<HomePage> {
         keyboardType: TextInputType.text,
         style: Theme.of(context).textTheme.body2,
         decoration: InputDecoration(
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(25.0),
+            borderSide: BorderSide(width: 4),
+          ),
           labelText: label,
           errorText: _showValidationError ? "Invalid address" : null,
           contentPadding: EdgeInsets.only(left: 15.0, top: 15.0),

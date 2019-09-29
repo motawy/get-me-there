@@ -32,9 +32,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-fonts:
-  - family: FredokaOne
-    fonts:
-      - asset: fonts/FredokaOne-Regular.ttf
-        weight: 500
+  fonts:
+    - family: CabinRegular
+      fonts:
+        - asset: fonts/Cabin-Regular.ttf
+          weight: 500

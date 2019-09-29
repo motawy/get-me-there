@@ -59,7 +59,7 @@ TextTheme _buildTextTheme(TextTheme base) {
         ),
       )
       .apply(
-        fontFamily: 'FredokaOne',
+        fontFamily: 'CabinRegular',
         displayColor: Colors.black87,
         bodyColor: Colors.black87,
       );

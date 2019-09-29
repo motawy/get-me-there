@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_me_there/models/transit_model.dart';
 import 'package:get_me_there/models/user_location.dart';
+import 'package:get_me_there/screens/home_page.dart';
+import 'package:get_me_there/screens/loading_screen.dart';
 import 'package:get_me_there/utilities/constants.dart';
+import 'package:get_me_there/widget/fancy_button.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 
@@ -21,6 +24,7 @@ class _TransitStepsState extends State<TransitSteps> {
   List<Sec> sec = List<Sec>();
   LatLng stepPosition;
   bool isTransport = false;
+  bool _isTransitOver = false;
 
   @override
   void initState() {
@@ -68,25 +72,27 @@ class _TransitStepsState extends State<TransitSteps> {
                     : isTransport = true;
                 return isTransport
                     ? FractionallySizedBox(
-                        heightFactor: 0.32,
+                        heightFactor: 0.4,
                         widthFactor: 0.9,
                         alignment: Alignment.topCenter,
                         child: Card(
-                          color: kGMTprimaryLight,
-                          shape: BeveledRectangleBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(7.0)),
+                          color: Colors.white,
+                          shape: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25.0),
+                            borderSide:
+                                BorderSide(width: 4, color: kGMTprimary),
                           ),
                           elevation: 4,
                           child: Padding(
                             padding: const EdgeInsets.all(24.0),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     Column(
                                       children: <Widget>[
@@ -127,34 +133,38 @@ class _TransitStepsState extends State<TransitSteps> {
                                 SizedBox(
                                   height: 8,
                                 ),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      "From",
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                    Text(
-                                      _cutStopName(sec[index].dep.stn.name),
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(
-                                      height: 8,
-                                    ),
-                                    Text(
-                                      "To",
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                    Text(
-                                      _cutStopName(sec[index].arr.stn.name),
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        "From",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      Text(
+                                        _cutStopName(sec[index].dep.stn.name),
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(
+                                        height: 8,
+                                      ),
+                                      Text(
+                                        "To",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      Text(
+                                        _cutStopName(sec[index].arr.stn.name),
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                                 SizedBox(
                                   height: 8,
@@ -174,7 +184,8 @@ class _TransitStepsState extends State<TransitSteps> {
                                         children: <Widget>[
                                           Icon(
                                             Icons.pin_drop,
-                                            color: kGMTlight,
+                                            color: Colors.black54,
+                                            size: 28,
                                           ),
                                           SizedBox(
                                             width: 8,
@@ -194,7 +205,8 @@ class _TransitStepsState extends State<TransitSteps> {
                                         children: <Widget>[
                                           Icon(
                                             Icons.timer,
-                                            color: kGMTlight,
+                                            color: Colors.black54,
+                                            size: 30,
                                           ),
                                           SizedBox(
                                             width: 8,
@@ -212,27 +224,40 @@ class _TransitStepsState extends State<TransitSteps> {
                                     ],
                                   ),
                                 ),
+                                _isTransitOver
+                                    ? FancyButton(
+                                        onPressed: () {
+                                          // Go to details page!
+                                          Navigator.pop(context);
+                                        },
+                                      )
+                                    : SizedBox(),
                               ],
                             ),
                           ),
                         ),
                       )
                     : FractionallySizedBox(
-                        heightFactor: 0.3,
+                        heightFactor: 0.4,
                         widthFactor: 0.9,
                         alignment: Alignment.topCenter,
                         child: Card(
-                          color: kGMTprimaryLight,
-                          shape: BeveledRectangleBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(7.0)),
+                          color: Colors.white,
+                          shape: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25.0),
+                            borderSide:
+                                BorderSide(width: 4, color: kGMTprimary),
                           ),
                           elevation: 4,
                           child: Padding(
                             padding: const EdgeInsets.all(24.0),
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     _convertModeOfTransport(sec[index].mode),
                                     Card(
@@ -253,35 +278,53 @@ class _TransitStepsState extends State<TransitSteps> {
                                 SizedBox(
                                   height: 20,
                                 ),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                Row(
                                   children: <Widget>[
-                                    Text(
-                                      "To",
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                    index == sec.length - 1
-                                        ? Text(
-                                            "Destination",
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
-                                          )
-                                        : Text(
-                                            _cutStopName(
-                                                sec[index].arr.stn.name),
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
+                                    Column(
+                                      children: <Widget>[
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 8.0),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              Text(
+                                                "To",
+                                                style: TextStyle(fontSize: 12),
+                                              ),
+                                              index == sec.length - 1
+                                                  ? Text(
+                                                      "Destination",
+                                                      style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    )
+                                                  : Text(
+                                                      _cutStopName(sec[index]
+                                                          .arr
+                                                          .stn
+                                                          .name),
+                                                      style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                            ],
                                           ),
+                                        ),
+                                      ],
+                                    ),
                                   ],
                                 ),
                                 SizedBox(
                                   height: 20,
                                 ),
                                 Align(
-                                  alignment: Alignment.bottomRight,
+                                  alignment: Alignment.topLeft,
                                   child: Column(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
@@ -295,7 +338,8 @@ class _TransitStepsState extends State<TransitSteps> {
                                         children: <Widget>[
                                           Icon(
                                             Icons.pin_drop,
-                                            color: kGMTlight,
+                                            color: Colors.black54,
+                                            size: 30,
                                           ),
                                           SizedBox(
                                             width: 8,
@@ -317,7 +361,8 @@ class _TransitStepsState extends State<TransitSteps> {
                                         children: <Widget>[
                                           Icon(
                                             Icons.timer,
-                                            color: kGMTlight,
+                                            color: Colors.black54,
+                                            size: 28,
                                           ),
                                           SizedBox(
                                             width: 8,
@@ -335,6 +380,14 @@ class _TransitStepsState extends State<TransitSteps> {
                                     ],
                                   ),
                                 ),
+                                _isTransitOver
+                                    ? FancyButton(
+                                        onPressed: () {
+                                          // Go to details page!
+                                          Navigator.pop(context);
+                                        },
+                                      )
+                                    : SizedBox(),
                               ],
                             ),
                           ),
@@ -349,7 +402,10 @@ class _TransitStepsState extends State<TransitSteps> {
                 var coord;
                 if (index == 0) {
                   coord = LatLng(sec[index].dep.addr.y, sec[index].dep.addr.x);
+                } else if (index == sec.length - 1) {
+                  _isTransitOver = true;
                 } else {
+                  _isTransitOver = false;
                   coord = LatLng(sec[index].dep.stn.y, sec[index].dep.stn.x);
                 }
 
