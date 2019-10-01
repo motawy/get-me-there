@@ -1,12 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:get_me_there/models/transit_model.dart';
 import 'package:get_me_there/models/user_location.dart';
-import 'package:get_me_there/screens/route_details.dart';
 import 'package:get_me_there/screens/transit_steps.dart';
 import 'package:get_me_there/services/transit_service.dart';
+import 'package:get_me_there/widget/fancy_button.dart';
 import 'package:get_me_there/widget/top_part.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
@@ -42,12 +43,13 @@ class _HomePageState extends State<HomePage> {
   Map<PolylineId, Polyline> polylines = <PolylineId, Polyline>{};
   List<LatLng> polylineCoordinates = [];
   GoogleMapController googleMapController;
-  var uuid = new Uuid();
+  Uuid uuid = Uuid();
   String searchAddress;
   List<Connection> transitConnections = List<Connection>();
   List<Sec> _selectedSection = List<Sec>();
-  // Transit service reference
   TransitService transitService = TransitService();
+  int _flexMap = 5;
+  int _flexOptions = 1;
 
   TextEditingController locationController = TextEditingController();
   TextEditingController destinationController = TextEditingController();
@@ -93,7 +95,7 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  Expanded(
+                  Flexible(
                     flex: 2,
                     child: Column(
                       children: <Widget>[
@@ -127,8 +129,8 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                   ),
-                  Expanded(
-                    flex: 4,
+                  Flexible(
+                    flex: _flexMap,
                     child: Stack(
                       fit: StackFit.expand,
                       children: <Widget>[
@@ -138,7 +140,10 @@ class _HomePageState extends State<HomePage> {
                           child: _currentLocation == null
                               ? Container(
                                   alignment: Alignment.center,
-                                  child: CircularProgressIndicator(),
+                                  child: SpinKitChasingDots(
+                                    color: Colors.black54,
+                                    size: 100.0,
+                                  ),
                                 )
                               : GoogleMap(
                                   myLocationButtonEnabled: true,
@@ -164,11 +169,12 @@ class _HomePageState extends State<HomePage> {
                             ? Positioned(
                                 bottom: 90,
                                 left: 10,
-                                width: 60,
-                                height: 60,
-                                child: FloatingActionButton(
-                                  backgroundColor: Colors.teal,
-                                  child: Icon(Icons.directions),
+                                child: FancyButton(
+                                  label: "Go",
+                                  icon: Icon(
+                                    Icons.directions,
+                                    color: Colors.white,
+                                  ),
                                   onPressed: () {
                                     // Go to details page!
                                     Navigator.push(
@@ -181,9 +187,6 @@ class _HomePageState extends State<HomePage> {
                                             markers: markers,
                                             polylines: polylines,
                                           );
-//                                          return RouteDetails(
-//                                            sections: _selectedSection,
-//                                          );
                                         },
                                       ),
                                     );
@@ -203,10 +206,13 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                   ),
-                  Container(
-                    height: 200,
+                  Flexible(
+                    flex: _flexOptions,
                     child: transitConnections.length == 0
-                        ? SizedBox()
+                        ? SizedBox(
+                            child:
+                                Text("Result will appear here after search.."),
+                          )
                         : ListView.builder(
                             itemCount: transitConnections.length,
                             scrollDirection: Axis.vertical,
@@ -388,7 +394,7 @@ class _HomePageState extends State<HomePage> {
       destinationController.text = searchAddress;
       // Move map towards the address
       _addMarkerToAddress(searchAddress);
-      _moveMapToAddress(_destinationCoord, 12);
+      _moveMapToAddress(_destinationCoord, 15);
       // Show the options
       var transitData = await transitService.getTransitInfo(
           _currentLocation.latitude,
@@ -397,7 +403,10 @@ class _HomePageState extends State<HomePage> {
           _destinationCoord.longitude);
       // Show different time for the selected option
       _decodeTransitData(transitData);
-      setState(() {});
+      setState(() {
+        _flexMap = 4;
+        _flexOptions = 2;
+      });
       return await Geocoder.local.findAddressesFromQuery(p.description);
     }
     return null;
@@ -436,7 +445,6 @@ class _HomePageState extends State<HomePage> {
       // Grab all connections for the trip
       transitConnections.add(conn);
     }
-    print("CONNECTIONS: ${transitConnections.length}");
   }
 
   int _parseCustomDuration(String duration) {
@@ -561,7 +569,7 @@ class _HomePageState extends State<HomePage> {
 
   _animateCameraToShowTransit() {
     googleMapController.animateCamera(
-      CameraUpdate.zoomTo(11.0),
+      CameraUpdate.zoomTo(13.0),
     );
   }
 

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 class FancyButton extends StatelessWidget {
-  FancyButton({@required this.onPressed});
+  FancyButton(
+      {@required this.onPressed, @required this.label, @required this.icon});
   final GestureTapCallback onPressed;
+  final String label;
+  final Icon icon;
 
   @override
   Widget build(BuildContext context) {
@@ -14,16 +17,13 @@ class FancyButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          children: const <Widget>[
-            Icon(
-              Icons.done,
-              color: Colors.white,
-            ),
+          children: <Widget>[
+            icon,
             SizedBox(
               width: 8,
             ),
             Text(
-              "Done",
+              label,
               style: TextStyle(color: Colors.white),
             )
           ],
