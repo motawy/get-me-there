@@ -29,7 +29,7 @@ const kTextFieldInputDecoration = InputDecoration(
 );
 
 // Need to hide this
-const kGoogleApiKey = "AIzaSyBdYAcKSIYMI8zxBGv9uAJwQF81hqIb-h8";
+const kGoogleApiKey = "YOUR GOOGLE API KEY";
 
 const kGMTprimary = const Color(0xFF3A6D8C);
 const kGMTprimaryLight = const Color(0xFF7EADBF);
