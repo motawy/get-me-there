@@ -4,8 +4,10 @@ import 'package:get_me_there/models/weather_model.dart';
 import 'networking.dart';
 import 'location_service.dart';
 
-const locationWeatherURL = 'https://0.0.0.0:3000/api/weather/updateCondition';
-const hourlyWeatherURL = 'https://0.0.0.0:3000/api/weather/hourlyCondition';
+const ipAddress = "118.138.10.31";
+const locationWeatherURL =
+    'https://$ipAddress:3000/api/weather/updateCondition';
+const hourlyWeatherURL = 'https://$ipAddress:3000/api/weather/hourlyCondition';
 
 class WeatherService {
   Future<dynamic> getLocationWeather() async {

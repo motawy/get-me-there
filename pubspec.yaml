@@ -25,12 +25,15 @@ dependencies:
   uuid: ^2.0.2
   timeline_list: ^0.0.5
   flutter_swiper: ^1.1.6
+  flare_flutter: ^1.5.9
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
 flutter:
+  assets:
+    - assets/
   uses-material-design: true
   fonts:
     - family: CabinRegular

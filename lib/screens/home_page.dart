@@ -48,13 +48,14 @@ class _HomePageState extends State<HomePage> {
   List<Connection> transitConnections = List<Connection>();
   List<Sec> _selectedSection = List<Sec>();
   TransitService transitService = TransitService();
-  int _flexMap = 5;
-  int _flexOptions = 1;
 
   TextEditingController locationController = TextEditingController();
   TextEditingController destinationController = TextEditingController();
-  static UserLocation _currentLocation;
+  UserLocation _currentLocation;
   LatLng _destinationCoord;
+  int flexTop = 2;
+  int flexMap = 4;
+  int flexBottom = 2;
 
   @override
   void initState() {
@@ -84,244 +85,259 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (MediaQuery.of(context).size.height < 800) {
+      flexTop = 2;
+      flexMap = 3;
+      flexBottom = 1;
+    } else {
+      flexTop = 2;
+      flexMap = 4;
+      flexBottom = 2;
+    }
     return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          TopPart(),
-          SafeArea(
-            child: Container(
-              height: MediaQuery.of(context).size.height,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Flexible(
-                    flex: 2,
-                    child: Column(
-                      children: <Widget>[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Text(
-                              '$temperature°',
-                              style: kTempTextStyle,
-                            ),
-                            Text(
-                              weatherIcon,
-                              style: kConditionTextStyle,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 16.0),
-                              child: Text(
-                                cityName,
-                                style: kCityNameTextStyle,
+      body: SingleChildScrollView(
+        child: Stack(
+          children: <Widget>[
+            TopPart(),
+            SafeArea(
+              child: Container(
+                height: MediaQuery.of(context).size.height,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Flexible(
+                      flex: flexTop,
+                      child: Column(
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                '$temperature°',
+                                style: kTempTextStyle,
                               ),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(top: 8.0),
-                          child: WeatherCarousel(
-                            weatherList: widget.hourlyWeather,
+                              Text(
+                                weatherIcon,
+                                style: kConditionTextStyle,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 16.0),
+                                child: Text(
+                                  cityName,
+                                  style: kCityNameTextStyle,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                          Padding(
+                            padding: EdgeInsets.only(top: 8.0),
+                            child: WeatherCarousel(
+                              weatherList: widget.hourlyWeather,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Flexible(
-                    flex: _flexMap,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: <Widget>[
-                        FractionallySizedBox(
-                          alignment: Alignment.topCenter,
-                          heightFactor: 0.8,
-                          child: _currentLocation == null
-                              ? Container(
-                                  alignment: Alignment.center,
-                                  child: SpinKitChasingDots(
-                                    color: Colors.black54,
-                                    size: 100.0,
+                    Flexible(
+                      flex: flexMap,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: <Widget>[
+                          FractionallySizedBox(
+                            alignment: Alignment.topCenter,
+                            heightFactor: 0.8,
+                            child: _currentLocation == null
+                                ? Container(
+                                    alignment: Alignment.center,
+                                    child: SpinKitRipple(
+                                      color: kGMTprimary,
+                                      size: 60,
+                                    ),
+                                  )
+                                : GoogleMap(
+                                    myLocationButtonEnabled: true,
+                                    mapType: MapType.normal,
+                                    initialCameraPosition: CameraPosition(
+                                        target: LatLng(
+                                            _currentLocation.latitude,
+                                            _currentLocation.longitude),
+                                        zoom: 14.0),
+                                    onMapCreated: onMapCreated,
+                                    compassEnabled: true,
+                                    scrollGesturesEnabled: true,
+                                    zoomGesturesEnabled: true,
+                                    myLocationEnabled: true,
+                                    markers: markers == null
+                                        ? null
+                                        : Set<Marker>.of(markers.values),
+                                    polylines: polylines == null
+                                        ? null
+                                        : Set<Polyline>.of(polylines.values),
+                                  ),
+                          ),
+                          _isOptionSelected
+                              ? Positioned(
+                                  bottom: 90,
+                                  left: 10,
+                                  child: FancyButton(
+                                    label: "Go",
+                                    icon: Icon(
+                                      Icons.directions,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () {
+                                      // Go to details page!
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) {
+                                            return TransitSteps(
+                                              position: _currentLocation,
+                                              sections: _selectedSection,
+                                              markers: markers,
+                                              polylines: polylines,
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    },
                                   ),
                                 )
-                              : GoogleMap(
-                                  myLocationButtonEnabled: true,
-                                  mapType: MapType.normal,
-                                  initialCameraPosition: CameraPosition(
-                                      target: LatLng(_currentLocation.latitude,
-                                          _currentLocation.longitude),
-                                      zoom: 14.0),
-                                  onMapCreated: onMapCreated,
-                                  compassEnabled: true,
-                                  scrollGesturesEnabled: true,
-                                  zoomGesturesEnabled: true,
-                                  myLocationEnabled: true,
-                                  markers: markers == null
-                                      ? null
-                                      : Set<Marker>.of(markers.values),
-                                  polylines: polylines == null
-                                      ? null
-                                      : Set<Polyline>.of(polylines.values),
-                                ),
-                        ),
-                        _isOptionSelected
-                            ? Positioned(
-                                bottom: 90,
-                                left: 10,
-                                child: FancyButton(
-                                  label: "Go",
-                                  icon: Icon(
-                                    Icons.directions,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: () {
-                                    // Go to details page!
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return TransitSteps(
-                                            position: _currentLocation,
-                                            sections: _selectedSection,
-                                            markers: markers,
-                                            polylines: polylines,
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                              )
-                            : SizedBox(),
-                        FractionallySizedBox(
-                          heightFactor: 1 - 0.8,
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: _buildTextField(
-                                "Enter destination", destinationController),
+                              : SizedBox(),
+                          FractionallySizedBox(
+                            heightFactor: 1 - 0.8,
+                            alignment: Alignment.bottomCenter,
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: _buildTextField(
+                                  "Enter destination", destinationController),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Flexible(
-                    flex: _flexOptions,
-                    child: transitConnections.length == 0
-                        ? SizedBox(
-                            child:
-                                Text("Result will appear here after search.."),
-                          )
-                        : ListView.builder(
-                            itemCount: transitConnections.length,
-                            scrollDirection: Axis.vertical,
-                            itemBuilder: (context, index) {
-                              return SizedBox(
-                                height: 100.0,
-                                child: Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: RaisedButton(
-                                    color: kGMTwhite,
-                                    onPressed: () {
-                                      _isOptionSelected = true;
-                                      _selectedSection =
-                                          transitConnections[index]
-                                              .sections
-                                              .sec;
-                                      _onOptionPressed(_selectedSection);
-                                    },
-                                    elevation: 4,
-                                    shape: StadiumBorder(
-                                      side: BorderSide(
-                                        color: kGMTprimary,
-                                        width: 4.0,
+                    Flexible(
+                      flex: flexBottom,
+                      child: transitConnections.length == 0
+                          ? SizedBox(
+                              child: Text("Results will be displayed here.."))
+                          : ListView.builder(
+                              itemCount: transitConnections.length,
+                              scrollDirection: Axis.vertical,
+                              itemBuilder: (context, index) {
+                                return SizedBox(
+                                  height: 100.0,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: RaisedButton(
+                                      color: kGMTwhite,
+                                      onPressed: () {
+                                        _isOptionSelected = true;
+                                        _selectedSection =
+                                            transitConnections[index]
+                                                .sections
+                                                .sec;
+                                        _onOptionPressed(_selectedSection);
+                                      },
+                                      elevation: 4,
+                                      shape: StadiumBorder(
+                                        side: BorderSide(
+                                          color: kGMTprimary,
+                                          width: 4.0,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          SizedBox(
+                                            width: 300,
+                                            height: 60,
+                                            child: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount:
+                                                  transitConnections[index]
+                                                      .sections
+                                                      .sec
+                                                      .length,
+                                              itemBuilder: (context, i) {
+                                                return SizedBox(
+                                                  width: 30,
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: <Widget>[
+                                                      _convertModeOfTransport(
+                                                        transitConnections[
+                                                                index]
+                                                            .sections
+                                                            .sec[i]
+                                                            .mode,
+                                                      ),
+                                                      SizedBox(
+                                                        height: 5,
+                                                      ),
+                                                      Text(
+                                                          _parseCustomDuration(
+                                                                  transitConnections[
+                                                                          index]
+                                                                      .sections
+                                                                      .sec[i]
+                                                                      .journey
+                                                                      .duration)
+                                                              .toString(),
+                                                          style: TextStyle(
+                                                              fontSize: 12)),
+                                                      Text(
+                                                        "min",
+                                                        style: TextStyle(
+                                                            fontSize: 8),
+                                                      )
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: <Widget>[
+                                              Text(
+                                                _parseCustomDuration(
+                                                        transitConnections[
+                                                                index]
+                                                            .duration)
+                                                    .toString(),
+                                                style: kButtonTextStyle,
+                                              ),
+                                              Text("min")
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        SizedBox(
-                                          width: 300,
-                                          height: 60,
-                                          child: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: transitConnections[index]
-                                                .sections
-                                                .sec
-                                                .length,
-                                            itemBuilder: (context, i) {
-                                              return SizedBox(
-                                                width: 30,
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: <Widget>[
-                                                    _convertModeOfTransport(
-                                                      transitConnections[index]
-                                                          .sections
-                                                          .sec[i]
-                                                          .mode,
-                                                    ),
-                                                    SizedBox(
-                                                      height: 5,
-                                                    ),
-                                                    Text(
-                                                        _parseCustomDuration(
-                                                                transitConnections[
-                                                                        index]
-                                                                    .sections
-                                                                    .sec[i]
-                                                                    .journey
-                                                                    .duration)
-                                                            .toString(),
-                                                        style: TextStyle(
-                                                            fontSize: 12)),
-                                                    Text(
-                                                      "min",
-                                                      style: TextStyle(
-                                                          fontSize: 8),
-                                                    )
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: <Widget>[
-                                            Text(
-                                              _parseCustomDuration(
-                                                      transitConnections[index]
-                                                          .duration)
-                                                  .toString(),
-                                              style: kButtonTextStyle,
-                                            ),
-                                            Text("min")
-                                          ],
-                                        ),
-                                      ],
-                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ],
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -362,16 +378,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _setInitialPosition() async {
-    var userLocation = LocationService();
-    _currentLocation = await userLocation.getCurrentLocation();
-    //locationController.text = userLocation.placeMark[0].name;
-
-    var location = loc.Location();
-    location.onLocationChanged().listen((loc.LocationData currentLocation) {
-      _currentLocation.latitude = currentLocation.latitude;
-      _currentLocation.longitude = currentLocation.longitude;
-    });
+  _setInitialPosition() async {
+    _currentLocation = await LocationService().getCurrentLocation();
+    setState(() {});
+//    var location = loc.Location();
+//    location.onLocationChanged().listen((loc.LocationData currentLocation) {
+//      _currentLocation.latitude = currentLocation.latitude;
+//      _currentLocation.longitude = currentLocation.longitude;
+//    });
   }
 
   Future<List<Address>> displayPrediction(Prediction p) async {
@@ -403,10 +417,7 @@ class _HomePageState extends State<HomePage> {
           _destinationCoord.longitude);
       // Show different time for the selected option
       _decodeTransitData(transitData);
-      setState(() {
-        _flexMap = 4;
-        _flexOptions = 2;
-      });
+      setState(() {});
       return await Geocoder.local.findAddressesFromQuery(p.description);
     }
     return null;
@@ -572,27 +583,4 @@ class _HomePageState extends State<HomePage> {
       CameraUpdate.zoomTo(13.0),
     );
   }
-
-//  Color _getColorForMap(int mode) {
-//    switch (mode) {
-//      case 0:
-//      case 2:
-//      case 3:
-//      case 4:
-//        return Colors.blueAccent;
-//      case 5:
-//        return Colors.deepOrangeAccent;
-//      case 6:
-//        return Colors.teal;
-//      case 7:
-//        return Colors.blueAccent;
-//      case 8:
-//        return Colors.green;
-//
-//      case 20:
-//        return Colors.black54;
-//      default:
-//        return null;
-//    }
-//  }
 }

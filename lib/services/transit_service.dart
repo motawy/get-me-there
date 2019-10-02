@@ -1,7 +1,8 @@
 import 'networking.dart';
 import 'package:intl/intl.dart';
 
-const transitURL = 'https://0.0.0.0:3000/api/transit/getMeThere';
+const ipAddress = "118.138.10.31";
+const transitURL = 'https://$ipAddress:3000/api/transit/getMeThere';
 
 class TransitService {
   Future<dynamic> getTransitInfo(depLat, depLon, arrLat, arrLon) async {

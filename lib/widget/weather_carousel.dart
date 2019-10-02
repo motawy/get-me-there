@@ -58,12 +58,12 @@ class _WeatherCarouselState extends State<WeatherCarousel> {
                               ),
                               Text(widget.weatherList[index].temperature
                                       .toStringAsFixed(0) +
-                                  "°"),
+                                  "° C"),
                               SizedBox(
                                 height: 10,
                               ),
-                              Text(widget.weatherList[index].time.hour
-                                  .toString()),
+                              Text(_convertTimeToString(
+                                  widget.weatherList[index].time.hour)),
                             ],
                           ),
                         ),
@@ -74,5 +74,15 @@ class _WeatherCarouselState extends State<WeatherCarousel> {
               ),
       ),
     );
+  }
+
+  String _convertTimeToString(int hour) {
+    if (hour < 12) {
+      return hour.toString() + " am";
+    } else if (hour == 12) {
+      return hour.toString() + " pm";
+    } else {
+      return (hour - 12).toString() + " pm";
+    }
   }
 }

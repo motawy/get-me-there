@@ -23,6 +23,7 @@ class _TransitStepsState extends State<TransitSteps> {
   LatLng stepPosition;
   bool isTransport = false;
   bool isTransitOver = false;
+  double cardSize;
 
   @override
   void initState() {
@@ -36,6 +37,11 @@ class _TransitStepsState extends State<TransitSteps> {
   @override
   Widget build(BuildContext context) {
     setState(() {});
+    if (MediaQuery.of(context).size.height < 800) {
+      cardSize = 0.5;
+    } else {
+      cardSize = 0.33;
+    }
     return Scaffold(
       backgroundColor: kGMTlight,
       appBar: AppBar(
@@ -74,7 +80,7 @@ class _TransitStepsState extends State<TransitSteps> {
                     : isTransport = true;
                 return isTransport
                     ? FractionallySizedBox(
-                        heightFactor: 0.4,
+                        heightFactor: cardSize,
                         widthFactor: 0.9,
                         alignment: Alignment.topCenter,
                         child: Card(
@@ -228,7 +234,7 @@ class _TransitStepsState extends State<TransitSteps> {
                         ),
                       )
                     : FractionallySizedBox(
-                        heightFactor: 0.26,
+                        heightFactor: cardSize,
                         widthFactor: 0.9,
                         alignment: Alignment.topCenter,
                         child: Card(
